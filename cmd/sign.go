@@ -29,6 +29,7 @@ you will be able to sign your app or ipa with every mobileprovision available in
 		logrusConfiguration()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		log.Info("Starting iOS appsigner")
 		if err := sign(); err != nil {
 			return err
 		}
@@ -56,7 +57,6 @@ func enableBaseSigningRequirements(cmd *cobra.Command, udidRequired bool) {
 }
 
 func sign() error {
-	log.Trace("popo")
 	err := architecturecheck.CheckLipo()
 	if err != nil {
 		log.WithFields(log.Fields{"err": err}).Error("lipo is not installed, make sure xcode is installed or add lipo to /usr/bin")

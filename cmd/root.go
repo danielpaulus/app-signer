@@ -24,6 +24,7 @@ you will be able to sign your app or ipa
 			logrusConfiguration()
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			log.Info("Starting iOS appsigner")
 			if err := sign(); err != nil {
 				return err
 			}
