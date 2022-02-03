@@ -16,6 +16,7 @@ type SigningInputs struct {
 	ProfilesPath               string
 	OutputFileName             string
 	IpaFileToSign              string
+	UseSingleCertificate       bool
 }
 
 var signingInputs = SigningInputs{}
@@ -39,6 +40,7 @@ you will be able to sign your app or ipa with every mobileprovision available in
 
 func init() {
 	enableBaseSigningRequirements(signCmd, false)
+	signingInputs.UseSingleCertificate = true
 }
 
 func enableBaseSigningRequirements(cmd *cobra.Command, udidRequired bool) {
@@ -64,7 +66,7 @@ func sign() error {
 	}
 	workdir, err := ioutil.TempDir("", "pattern")
 	defer os.RemoveAll(workdir)
-	s, err := api.PrepareSigningWorkspace(workdir, signingInputs.ProfileCertificatePassword, signingInputs.ProfilesPath)
+	s, err := api.PrepareSigningWorkspace(workdir, signingInputs.ProfileCertificatePassword, signingInputs.ProfilesPath, signingInputs.UseSingleCertificate)
 	defer s.Close()
 	_, err = api.ResignIPA(s, signingInputs.ReferenceUdid, signingInputs.IpaFileToSign, signingInputs.OutputFileName)
 	if err != nil {

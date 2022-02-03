@@ -12,7 +12,7 @@ import (
 	"github.com/danielpaulus/app-signer/codesign"
 )
 
-func PrepareSigningWorkspace(workdir string, profilePassword string, profilesDir string) (SigningWorkspace, error) {
+func PrepareSigningWorkspace(workdir string, profilePassword string, profilesDir string, useSingleCertificate bool) (SigningWorkspace, error) {
 	workDirPath, err := filepath.Abs(workdir)
 	if err != nil {
 		log.WithFields(log.Fields{"err": err}).Error("workdir path Abs failed")
@@ -31,7 +31,9 @@ func PrepareSigningWorkspace(workdir string, profilePassword string, profilesDir
 	}
 
 	signingWorkspace := NewSigningWorkspace(workDirPath, profilePassword)
-
+	if useSingleCertificate {
+		signingWorkspace.EnableSingleCertificateUsage()
+	}
 	err = signingWorkspace.PrepareProfiles(profilesDir)
 	if err != nil {
 		log.Error("appsigner failed to start")
