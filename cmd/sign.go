@@ -25,6 +25,9 @@ var signCmd = &cobra.Command{
 	Short: "Sign your apps or ipa using a list of mobile provision, and without a reference udid",
 	Long: `By providing your .p12 certificate as well as a list of mobileprovision files, 
 you will be able to sign your app or ipa with every mobileprovision available in the profiles path`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		logrusConfiguration()
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := sign(); err != nil {
 			return err
