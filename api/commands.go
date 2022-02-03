@@ -104,10 +104,9 @@ func ResignIPA(s SigningWorkspace, udid string, ipafilePath string, outputFileNa
 		return "", fmt.Errorf("failed signing app: %v", err)
 	}
 
-
 	f, err := os.OpenFile(outputFileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	err = codesign.CompressToZip(directory, f)
 	if err != nil {
