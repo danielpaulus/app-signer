@@ -14,12 +14,10 @@ require (
 	howett.net/plist v0.0.0-20201203080718-1454fab16a06
 )
 
-require github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
-
 require (
+	github.com/spf13/cobra v1.3.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/spf13/cobra v1.3.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 )
