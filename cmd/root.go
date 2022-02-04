@@ -16,7 +16,7 @@ var (
 		Short: "app-signer is a Cli helping you sign your iOS apps or ipa on macOS using the official apple codesign tooling",
 		Long: `app-signer is a Cli helping you sign iOS apps or ipa using your own certificates and mobileprovision files.
 In the background, it uses the official apple codesign tooling on macOS.
-By providing your .p12 certificate, associated mobileprovision files and a reference device, 
+By providing your .p12 certificates and associated mobileprovision files as well as a reference device, 
 you will be able to sign your app or ipa
 `,
 		Version: AppSignerVersion,

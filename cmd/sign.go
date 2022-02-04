@@ -44,14 +44,16 @@ func init() {
 }
 
 func enableBaseSigningRequirements(cmd *cobra.Command, udidRequired bool) {
+	outputDescription := "Output folder path were all signed apps will be stored. The target app will be signed with each mobileprovision file available in the profile path"
 	cmd.Flags().StringVar(&signingInputs.ReferenceUdid, "udid", "", "Reference udid in order to select the provisioning profile located in your profiles folder")
-	cmd.Flags().StringVar(&signingInputs.ProfileCertificatePassword, "p12password", "", "Password for your .p12 located in the your profiles folder")
-	cmd.Flags().StringVar(&signingInputs.ProfilesPath, "profilespath", "", "Path to your profiles folder. It should contains a list of mobileprovision as well as a single .p12 associated with them")
-	cmd.Flags().StringVar(&signingInputs.OutputFileName, "output", "", "Output path for the signed app or ipa")
-	cmd.Flags().StringVar(&signingInputs.IpaFileToSign, "ipa", "", "Path to the target ipa to be signed")
 	if udidRequired {
+		outputDescription = "Output path+filename for the signed app or ipa"
 		cmd.MarkFlagRequired("udid")
 	}
+	cmd.Flags().StringVar(&signingInputs.ProfileCertificatePassword, "p12password", "", "Password for your .p12 located in the your profiles folder")
+	cmd.Flags().StringVar(&signingInputs.ProfilesPath, "profilespath", "", "Path to your profiles folder. It should contains a list of mobileprovision as well as a single .p12 associated with them")
+	cmd.Flags().StringVar(&signingInputs.IpaFileToSign, "ipa", "", "Path to the target app to be signed")
+	cmd.Flags().StringVar(&signingInputs.OutputFileName, "output", "", outputDescription)
 	cmd.MarkFlagRequired("p12password")
 	cmd.MarkFlagRequired("profilespath")
 	cmd.MarkFlagRequired("output")
