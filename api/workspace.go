@@ -21,11 +21,12 @@ type certAndEntitlement struct {
 //SigningWorkspace contains the workdir and allows for parsing provisioning profiles.
 //It also keeps which certificates are stored where in the workspace dir and knows where the keychain is.
 type SigningWorkspace struct {
-	workdir         string
-	profiles        []codesign.ProfileAndCertificate
-	extractedFiles  []certAndEntitlement
-	keychainPath    string
-	profilePassword string
+	workdir              string
+	profiles             []codesign.ProfileAndCertificate
+	extractedFiles       []certAndEntitlement
+	keychainPath         string
+	profilePassword      string
+	useSingleCertificate bool
 }
 
 //NewSigningWorkspace set up a new Workspace with a new workdir
@@ -36,7 +37,7 @@ func NewSigningWorkspace(workdir string, profilePassword string) SigningWorkspac
 //PrepareProfiles parses the mobileprovisioning profiles in the given profilesDir.
 //It extracts entitlements and stores P12 files, as well associating the correct sha1 fingerprints.
 func (s *SigningWorkspace) PrepareProfiles(profilesDir string) error {
-	profiles, err := codesign.ParseProfiles(profilesDir, s.profilePassword)
+	profiles, err := codesign.ParseProfiles(profilesDir, s.profilePassword, s.useSingleCertificate)
 	if err != nil {
 		log.WithFields(log.Fields{"err": err}).Error("loading profiles failed")
 		return err
@@ -141,6 +142,10 @@ func (s *SigningWorkspace) GetConfig(index int) codesign.SigningConfig {
 		KeychainPath:         s.keychainPath,
 		ProfileBytes:         s.profiles[index].RawData,
 	}
+}
+
+func (s *SigningWorkspace) EnableSingleCertificateUsage() {
+	s.useSingleCertificate = true
 }
 
 //TestSigning executes a simple codesign operation to check it works still.

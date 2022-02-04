@@ -3,16 +3,17 @@ package codesign_test
 import (
 	"bytes"
 	b64 "encoding/base64"
-	"github.com/danielpaulus/app-signer/api"
-	"github.com/danielpaulus/app-signer/codesign"
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"testing"
 	"time"
+
+	"github.com/danielpaulus/app-signer/api"
+	"github.com/danielpaulus/app-signer/codesign"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -126,7 +127,7 @@ func makeWorkspace() (api.SigningWorkspace, func()) {
 }
 
 func findProfile(udid string) int {
-	profiles, err := codesign.ParseProfiles("../provisioningprofiles", testProfilePassword)
+	profiles, err := codesign.ParseProfiles("../provisioningprofiles", testProfilePassword, false)
 	if err != nil {
 		log.Fatalf("could not parse profiles %+v", err)
 	}

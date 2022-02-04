@@ -102,20 +102,39 @@ func IsEnterpriseProfile(profilePath string) bool {
 
 //ParseProfiles looks for *.mobileprovision in the given path and parses each of them.
 //It returns an error if the path does not contain any profiles.
-func ParseProfiles(profilesPath string, profilePassword string) ([]ProfileAndCertificate, error) {
+func ParseProfiles(profilesPath string, profilePassword string, useSingleCertificate bool) ([]ProfileAndCertificate, error) {
 	result := []ProfileAndCertificate{}
+	singleCertificatePath := ""
 	profiles, err := filepath.Glob(path.Join(profilesPath, "*.mobileprovision"))
 	if err != nil {
 		return result, err
 	}
+	if useSingleCertificate {
+		//New profiles parsing with a single .p12 and multiple mobileprovision
+		var certs []string
+		certs, err = filepath.Glob(path.Join(profilesPath, "*.p12"))
+		if len(certs) == 0 {
+			return result, fmt.Errorf("no .p12 certificate was found in the profile path %s", profilesPath)
+		}
+		if len(certs) > 1 {
+			log.Warn("more than one .p12 was found in the profile path %s . using the first in the list...", profilesPath)
+		}
+		singleCertificatePath = certs[0]
+		log.Infof("using certificate '%s'", singleCertificatePath)
+	}
+	//Default profiles parsing
 	for _, file := range profiles {
 		log.Infof("parsing profile '%s'", file)
-		profile, err := ParseProfile(file, profilePassword)
+		var profile ProfileAndCertificate
+		if useSingleCertificate {
+			profile, err = ParseProfileWithSingleCertificate(singleCertificatePath, file, profilePassword)
+		} else {
+			profile, err = ParseProfile(file, profilePassword)
+		}
 		if err != nil {
 			return result, err
 		}
 		result = append(result, profile)
-
 	}
 	if len(result) == 0 {
 		return result, fmt.Errorf("no profiles found in path %s", profilesPath)
@@ -135,6 +154,56 @@ func ParseProfile(profilePath string, profilePassword string) (ProfileAndCertifi
 		return ProfileAndCertificate{}, err
 	}
 	p12bytes, err := ioutil.ReadFile(strings.Replace(profilePath, ".mobileprovision", ".p12", 1))
+	if err != nil {
+		return ProfileAndCertificate{}, fmt.Errorf("Failed reading p12 file for %s with err: %+v", profilePath, err)
+	}
+
+	_, cert, err := pkcs12.Decode(p12bytes, profilePassword)
+	if err != nil {
+		return ProfileAndCertificate{}, fmt.Errorf("Failed parsing p12 certificate with: %+v", err)
+	}
+
+	p7, err := pkcs7.Parse(profileBytes)
+	if err != nil {
+		return ProfileAndCertificate{}, err
+	}
+
+	decoder := plist.NewDecoder(bytes.NewReader(p7.Content))
+
+	var profile MobileProvisioningProfile
+	err = decoder.Decode(&profile)
+
+	parsedDeveloperCertificates := make([]*x509.Certificate, len(profile.DeveloperCertificates))
+
+	for i, certBytes := range profile.DeveloperCertificates {
+		cert, err := x509.ParseCertificate(certBytes)
+		parsedDeveloperCertificates[i] = cert
+		if err != nil {
+			return ProfileAndCertificate{}, err
+		}
+	}
+
+	if !verifyP12CertIsInProfile(cert, parsedDeveloperCertificates) {
+		return ProfileAndCertificate{}, fmt.Errorf("p12 certificate is not contained in provisioning profile, wrong profile file for this p12")
+	}
+
+	return ProfileAndCertificate{MobileProvisioningProfile: profile,
+		RawData:         profileBytes,
+		CertificateSha1: getSha1Fingerprint(cert),
+		P12Bytes:        p12bytes,
+		SigningCert:     cert,
+	}, err
+}
+
+//ParseProfileWithSingleCertificate is exactly like ParseProfile but instead of mobileprovision/.p12 tuples,
+//we give a single .p12 path located in the folder alongside the mobileprovision files
+//TODO To refactor. this function should be discarded and instead, changes changes should be applied to ParseProfile. This is mainly done for test compatibility and potential breaking changes
+func ParseProfileWithSingleCertificate(certificatePath string, profilePath string, profilePassword string) (ProfileAndCertificate, error) {
+	profileBytes, err := ioutil.ReadFile(profilePath)
+	if err != nil {
+		return ProfileAndCertificate{}, err
+	}
+	p12bytes, err := ioutil.ReadFile(certificatePath)
 	if err != nil {
 		return ProfileAndCertificate{}, fmt.Errorf("Failed reading p12 file for %s with err: %+v", profilePath, err)
 	}

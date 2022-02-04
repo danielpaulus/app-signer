@@ -10,7 +10,7 @@ import (
 )
 
 func TestDirWithoutProfiles(t *testing.T) {
-	_, err := codesign.ParseProfiles(".", "")
+	_, err := codesign.ParseProfiles(".", "", false)
 	assert.Error(t, err)
 }
 
@@ -20,7 +20,7 @@ func TestEnterpriseProfileDetection(t *testing.T) {
 }
 
 func TestParsing(t *testing.T) {
-	profileAndCertificates, err := codesign.ParseProfiles("../provisioningprofiles", testProfilePassword)
+	profileAndCertificates, err := codesign.ParseProfiles("../provisioningprofiles", testProfilePassword, false)
 	if err != nil {
 		log.Fatalf("failed finding profiles %+v", err)
 	}
@@ -35,7 +35,7 @@ func TestParsing(t *testing.T) {
 }
 
 func TestFindDeviceInProfile(t *testing.T) {
-	profileAndCertificates, err := codesign.ParseProfiles("../provisioningprofiles", testProfilePassword)
+	profileAndCertificates, err := codesign.ParseProfiles("../provisioningprofiles", testProfilePassword, false)
 	if err != nil {
 		log.Fatalf("failed finding profiles %+v", err)
 	}
