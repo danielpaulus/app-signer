@@ -28,19 +28,18 @@ var signCmd = &cobra.Command{
 you will be able to sign your app or ipa with every mobileprovision available in the profiles path`,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		logrusConfiguration()
+		signingInputs.UseSingleCertificate = true
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		log.Info("Starting iOS appsigner")
 		if err := sign(); err != nil {
-			return err
+			log.Error(err)
 		}
-		return nil
 	},
 }
 
 func init() {
 	enableBaseSigningRequirements(signCmd, false)
-	signingInputs.UseSingleCertificate = true
 }
 
 func enableBaseSigningRequirements(cmd *cobra.Command, udidRequired bool) {

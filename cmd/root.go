@@ -23,12 +23,11 @@ you will be able to sign your app or ipa
 		PreRun: func(cmd *cobra.Command, args []string) {
 			logrusConfiguration()
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			log.Info("Starting iOS appsigner")
 			if err := sign(); err != nil {
-				return err
+				log.Error(err)
 			}
-			return nil
 		},
 	}
 )
